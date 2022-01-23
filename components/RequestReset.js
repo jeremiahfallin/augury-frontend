@@ -6,10 +6,7 @@ import Error from "./ErrorMessage";
 
 const REQUEST_RESET_MUTATION = gql`
   mutation SIGN_UP_MUTATION($email: String!) {
-    sendUserPasswordResetLink(email: $email) {
-      code
-      message
-    }
+    sendUserPasswordResetLink(email: $email)
   }
 `;
 
@@ -17,13 +14,8 @@ export default function RequestReset() {
   const { inputs, handleChange, resetForm } = useForm({
     email: "",
   });
-  const [signup, { data, loading, error }] = useMutation(
-    REQUEST_RESET_MUTATION,
-    {
-      variables: inputs,
-      // refetch currently logged in user
-      // refetchQueries: [{ query: CURRENT_USER_QUERY }],
-    }
+  const [{ data, fetching, error }, resetPassword] = useMutation(
+    REQUEST_RESET_MUTATION
   );
 
   return (
@@ -32,13 +24,13 @@ export default function RequestReset() {
       onSubmit={async (e) => {
         e.preventDefault();
         // send email and password to server
-        await signup().catch(console.error);
+        await resetPassword({ email: inputs.email }).catch(console.error);
         resetForm();
       }}
     >
       <h2>Request a Password Reset</h2>
       <Error error={error} />
-      <fieldset disabled={loading} aria-busy={loading}>
+      <fieldset disabled={fetching} aria-busy={fetching}>
         {data?.sendUserPasswordResetLink === null && (
           <p>Success! Check your email for a link!</p>
         )}

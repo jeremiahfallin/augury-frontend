@@ -90,8 +90,6 @@ const NewEntryWrapper = styled.div`
   align-items: center;
 `;
 
-const NewEntryInput = styled.input``;
-
 const SINGLE_TOURNAMENT_QUERY = gql`
   query SINGLE_TOURNAMENT_QUERY($slug: String!) {
     tournament(where: { slug: $slug }) {
@@ -220,7 +218,7 @@ export default function SingleTournament({ slug }) {
               (entry) => entry.tournament.name === tournament.name
             ).length < tournament.maxEntries && (
               <NewEntryWrapper>
-                <NewEntryInput
+                <input
                   type="text"
                   name="name"
                   onChange={(event) => {
