@@ -9,6 +9,7 @@ export default function Nav() {
   if (!auth.ready) return null;
   return (
     <NavStyles>
+      <Link href="/about">About</Link>
       <Link href="/tournaments">Tournaments</Link>
       {auth?.sessionData && (
         <>
