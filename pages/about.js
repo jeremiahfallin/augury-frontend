@@ -3,7 +3,8 @@ export default function AboutPage() {
     <section>
       <h1>About</h1>
       <p>
-        Augury is a game similar to the NFL's Eliminator Challenge for football.
+        Augury is a game similar to the NFL&apos;s Eliminator Challenge for
+        football.
       </p>
       <p>
         For each tournament you will be able to enter a set number of entries.
@@ -15,8 +16,8 @@ export default function AboutPage() {
       </p>
       <p>
         There are two catches. You can only use each team a set number of times,
-        meaning you can't just pick the best team in the league to win every
-        match.
+        meaning you can&apos;t just pick the best team in the league to win
+        every match.
       </p>
       <p>
         Second, if you pick a team a team to win a match and they lose, that
