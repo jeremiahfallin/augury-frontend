@@ -5,7 +5,7 @@ import useForm from "../lib/useForm";
 import Error from "./ErrorMessage";
 
 const REQUEST_RESET_MUTATION = gql`
-  mutation SIGN_UP_MUTATION($email: String!) {
+  mutation REQUEST_RESET_MUTATION($email: String!) {
     sendUserPasswordResetLink(email: $email)
   }
 `;
@@ -31,7 +31,7 @@ export default function RequestReset() {
       <h2>Request a Password Reset</h2>
       <Error error={error} />
       <fieldset disabled={fetching} aria-busy={fetching}>
-        {data?.sendUserPasswordResetLink === null && (
+        {data?.sendUserPasswordResetLink === true && (
           <p>Success! Check your email for a link!</p>
         )}
         <label htmlFor="email">
