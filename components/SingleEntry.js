@@ -141,8 +141,7 @@ export default function SingleEntry({ id }) {
       >
         <Head>
           <title>
-            League Eliminator | {entry.user.name}&apos;s Entry for{" "}
-            {entry.tournament.name}
+            Augury | {entry.user.name}&apos;s Entry for {entry.tournament.name}
           </title>
         </Head>
         Each team can be used {entry.tournament.maxTeamUses} times.

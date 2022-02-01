@@ -33,13 +33,13 @@ export default function Countdown({ lockInTime }) {
       (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
     );
     let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    // let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    let seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-    setTimeLeft(`${days}d ${hours}h ${minutes}m`);
+    setTimeLeft(`${days}d ${hours}h ${minutes}m ${seconds}s`);
   }, 1000);
   return (
     <div>
-      <p>Time until lockin: {timeLeft}</p>
+      <p>Time until lock-in: {timeLeft}</p>
     </div>
   );
 }

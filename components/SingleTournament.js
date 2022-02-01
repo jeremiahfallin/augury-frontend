@@ -1,10 +1,9 @@
-import { useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
 import { gql, useQuery, useMutation } from "urql";
 import styled from "styled-components";
 import Link from "next/link";
 import Image from "next/image";
-import Button from "./styles/Button";
 import { useAuth } from "../components/Auth";
 import DisplayError from "./ErrorMessage";
 
@@ -135,6 +134,23 @@ const CREATE_ENTRY_MUTATION = gql`
       }
     ) {
       id
+      name
+    }
+  }
+`;
+
+const ENTRIES_QUERY = gql`
+  query ENTRIES_QUERY($userId: ID!, $tournamentId: ID!) {
+    entries(
+      where: {
+        AND: [
+          { tournament: { id: { equals: $tournamentId } } }
+          { user: { id: { equals: $userId } } }
+        ]
+      }
+    ) {
+      id
+      name
     }
   }
 `;
@@ -142,6 +158,7 @@ const CREATE_ENTRY_MUTATION = gql`
 export default function SingleTournament({ slug }) {
   const auth = useAuth();
   const newEntryName = useRef(null);
+  const [entries, setEntries] = useState([]);
 
   const [
     {
@@ -154,14 +171,45 @@ export default function SingleTournament({ slug }) {
     variables: { slug },
   });
 
-  const [
-    { data: entryData, fetching: entryLoading, error: entryError },
-    createEntry,
-  ] = useMutation(CREATE_ENTRY_MUTATION);
+  const [{ fetching: entryLoading, error: entryError }, createEntry] =
+    useMutation(CREATE_ENTRY_MUTATION);
+
+  const [{ data: entriesData, fetching: entriesLoading, error: entriesError }] =
+    useQuery({
+      query: ENTRIES_QUERY,
+      variables: {
+        userId: auth?.sessionData?.id,
+        tournamentId: tournamentData?.tournament.id,
+      },
+    });
+
+  const addNewEntries = (newEntries) => {
+    if (newEntries.length > 0) {
+      setEntries((prevState) => {
+        let newState = [...prevState];
+        if (newEntries.length > 0) {
+          for (let entry of newEntries) {
+            if (!newState.some((e) => e.id === entry.id)) {
+              newState.push(entry);
+            }
+          }
+        }
+        return newState;
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (entriesData?.entries) {
+      addNewEntries(entriesData?.entries);
+    }
+  }, [entriesData]);
 
   if (tournamentLoading) return <p>Loading...</p>;
   if (tournamentError)
-    return <DisplayError error={tournamentError || entryError} />;
+    return (
+      <DisplayError error={tournamentError || entryError || entriesError} />
+    );
 
   const { tournament } = tournamentData;
   const teamData = tournament.match
@@ -177,43 +225,35 @@ export default function SingleTournament({ slug }) {
   return (
     <TournamentWrapper>
       <Head>
-        <title>League Eliminator | {tournament.name}</title>
+        <title>Augury | {tournament.name}</title>
       </Head>
       <div>
         <h2>{tournament.name}</h2>
         {auth?.sessionData && (
           <div>
             <h3>Entries:</h3>
-            {auth?.sessionData?.entry?.filter(
-              (entry) => entry.tournament.name === tournament.name
-            ).length ? (
-              <div
-                style={{
-                  display: "grid",
-                  gridAutoFlow: "column",
-                  gridTemplateColumns: `repeat(${tournament.maxEntries}, 1fr)`,
-                }}
-              >
-                {entryLoading && <p>Loading...</p>}
-                {!entryLoading &&
-                  auth?.sessionData?.entry
-                    ?.filter(
-                      (entry) => entry.tournament.name === tournament.name
-                    )
-                    .map((entry, i) => {
-                      return (
-                        <div key={entry.id}>
-                          <Link
-                            key={entry.id}
-                            href={`/tournament/${slug}/entry/${entry.id}`}
-                          >
-                            {entry.name}
-                          </Link>
-                        </div>
-                      );
-                    })}
-              </div>
-            ) : null}
+            <div
+              style={{
+                display: "grid",
+                gridAutoFlow: "column",
+                gridTemplateColumns: `repeat(${tournament.maxEntries}, 1fr)`,
+              }}
+            >
+              {entryLoading && <p>Loading...</p>}
+              {!entryLoading &&
+                entries?.map((entry, i) => {
+                  return (
+                    <div key={entry.id}>
+                      <Link
+                        key={entry.id}
+                        href={`/tournament/${slug}/entry/${entry.id}`}
+                      >
+                        {entry.name}
+                      </Link>
+                    </div>
+                  );
+                })}
+            </div>
             {auth?.sessionData?.entry?.filter(
               (entry) => entry.tournament.name === tournament.name
             ).length < tournament.maxEntries && (
@@ -224,16 +264,17 @@ export default function SingleTournament({ slug }) {
                   onChange={(event) => {
                     newEntryName.current = event.target.value;
                   }}
-                  placeholder="Team Name"
+                  placeholder="Entry Name"
                 />
                 <NewEntryButton
                   type="button"
                   onClick={async () => {
-                    await createEntry({
+                    const newEntry = await createEntry({
                       userId: auth.sessionData.id,
                       name: newEntryName.current,
                       tournamentId: tournament.id,
                     });
+                    addNewEntries([newEntry.data.createEntry]);
                   }}
                 >
                   Create New Entry
